@@ -18,9 +18,11 @@ def create_scrollable_window(root):
     canvas.configure(yscrollcommand=scrollbar.set)
 
     notebook = ttk.Notebook(scrollable_frame)
+    tab_overview = ttk.Frame(notebook)
     tab_winning_percentage = ttk.Frame(notebook)
     tab_daily_profit_loss = ttk.Frame(notebook)
     tab_trade_size = ttk.Frame(notebook)
+    notebook.add(tab_overview, text="Overview")
     notebook.add(tab_winning_percentage, text="Winning % by Time of Day")
     notebook.add(tab_daily_profit_loss, text="Daily Profit/Loss")
     notebook.add(tab_trade_size, text="Trade Size Over Time")
@@ -32,4 +34,4 @@ def create_scrollable_window(root):
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
 
-    return notebook, tab_winning_percentage, tab_daily_profit_loss, tab_trade_size, refresh_button
+    return notebook, tab_overview, tab_winning_percentage, tab_daily_profit_loss, tab_trade_size, refresh_button
