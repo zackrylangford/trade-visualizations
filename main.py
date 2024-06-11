@@ -35,6 +35,8 @@ def fetch_and_process_data():
 
         if isinstance(data, list):
             df = pd.DataFrame(data)
+            print("Fetched data:")
+            print(df.to_string())  # Print the entire DataFrame to inspect the data
             update_charts(df)
             data_fetched = True
             messagebox.showinfo("Success", "Data fetched and reports generated successfully.")
@@ -49,6 +51,7 @@ def update_charts(df):
     add_chart_to_tab(tab_daily_profit_loss, daily_profit_loss.generate_daily_profit_loss, df)
     add_chart_to_tab(tab_trade_size, trade_size_over_time.generate_trade_size_over_time, df)
     update_overview(tab_overview, df)
+
 
 def add_chart_to_tab(tab, generate_chart_func, df):
     chart_frame = tk.Frame(tab)

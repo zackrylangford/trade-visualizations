@@ -8,18 +8,35 @@ def generate_grouped_winning_trades(df):
     df['EnteredAt'] = pd.to_datetime(df['EnteredAt']).dt.tz_convert(timezone('US/Central'))
     df['EnteredTimeBlock'] = df['EnteredAt'].apply(lambda x: categorize_time_block(x))
 
+    print("After categorizing time blocks:")
+    print(df[['EnteredAt', 'EnteredTimeBlock', 'NetPnL']].to_string())  # Print all rows
+
     df['TradeOutcome'] = df['NetPnL'].apply(lambda x: 'Win' if x > 0 else 'Loss')
+    
+    # Ensure all time blocks are included by setting categories
+    time_blocks = [
+        'Early Morning (pre-9:30)', 'Morning (9:30-12:00)', 'Late Morning (12:00-15:00)', 
+        'Early Afternoon (15:00-17:00)', 'Evening (17:00-00:00)', 'Night (00:00-06:00)'
+    ]
+    df['EnteredTimeBlock'] = pd.Categorical(df['EnteredTimeBlock'], categories=time_blocks, ordered=True)
+
+    # Group by EnteredTimeBlock and TradeOutcome
     grouped_summary = df.groupby(['EnteredTimeBlock', 'TradeOutcome']).size().unstack().fillna(0)
+
+    # Add all time blocks to ensure none are missing
+    grouped_summary = grouped_summary.reindex(time_blocks).fillna(0)
+
+    # Calculate total trades and winning percentage
     grouped_summary['TotalTrades'] = grouped_summary.sum(axis=1)
     grouped_summary['WinningPercentage'] = grouped_summary['Win'] / grouped_summary['TotalTrades'] * 100
 
-    # Order the time blocks correctly
-    time_blocks = ['Early Morning (pre-9:30)', 'Morning (9:30-12:00)', 'Late Morning (12:00-15:00)', 
-                   'Early Afternoon (15:00-18:00)', 'Late Afternoon (18:00-21:00)', 
-                   'Evening (21:00-00:00)', 'Night (00:00-06:00)']
-    grouped_summary = grouped_summary.reindex(time_blocks)
+    print("Grouped summary:")
+    print(grouped_summary)  # Print the grouped summary
 
     fig, ax = plt.subplots(figsize=(12, 8))
+    
+    # Add padding to the bottom of the plot
+    plt.subplots_adjust(bottom=0.3)
     
     # Create a color palette based on winning percentage
     norm = plt.Normalize(grouped_summary['WinningPercentage'].min(), grouped_summary['WinningPercentage'].max())
@@ -47,17 +64,17 @@ def generate_grouped_winning_trades(df):
     return fig
 
 def categorize_time_block(timestamp):
-    if timestamp.hour < 9 or (timestamp.hour == 9 and timestamp.minute < 30):
+    hour = timestamp.hour
+    minute = timestamp.minute
+    if hour < 9 or (hour == 9 and minute < 30):
         return 'Early Morning (pre-9:30)'
-    elif 9 <= timestamp.hour < 12:
+    elif 9 <= hour < 12:
         return 'Morning (9:30-12:00)'
-    elif 12 <= timestamp.hour < 15:
+    elif 12 <= hour < 15:
         return 'Late Morning (12:00-15:00)'
-    elif 15 <= timestamp.hour < 18:
-        return 'Early Afternoon (15:00-18:00)'
-    elif 18 <= timestamp.hour < 21:
-        return 'Late Afternoon (18:00-21:00)'
-    elif 21 <= timestamp.hour < 24:
-        return 'Evening (21:00-00:00)'
+    elif 15 <= hour < 17:
+        return 'Early Afternoon (15:00-17:00)'
+    elif 17 <= hour < 24:
+        return 'Evening (17:00-00:00)'
     else:
         return 'Night (00:00-06:00)'
