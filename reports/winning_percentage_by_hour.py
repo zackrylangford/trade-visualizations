@@ -12,7 +12,9 @@ def generate_winning_percentage_by_hour(df):
                   '12 PM', '01 PM', '02 PM', '03 PM', '04 PM', '05 PM', '06 PM', '07 PM', '08 PM', '09 PM', '10 PM', '11 PM']
     df['EnteredHour'] = pd.Categorical(df['EnteredHour'], categories=hour_order, ordered=True)
     df['TradeOutcome'] = df['NetPnL'].apply(lambda x: 'Win' if x > 0 else 'Loss')
-    hourly_summary = df.groupby(['EnteredHour', 'TradeOutcome']).size().unstack().fillna(0)
+    
+    # Group by EnteredHour and TradeOutcome
+    hourly_summary = df.groupby(['EnteredHour', 'TradeOutcome']).size().unstack(fill_value=0)
     hourly_summary['TotalTrades'] = hourly_summary.sum(axis=1)
     hourly_summary['WinningPercentage'] = hourly_summary['Win'] / hourly_summary['TotalTrades'] * 100
 
@@ -23,7 +25,7 @@ def generate_winning_percentage_by_hour(df):
     sm = plt.cm.ScalarMappable(cmap="RdYlGn", norm=norm)
     sm.set_array([])
 
-    colors = sm.to_rgba(hourly_summary['WinningPercentage'])
+    colors = [sm.to_rgba(pct) for pct in hourly_summary['WinningPercentage']]
 
     sns.barplot(x=hourly_summary.index, y=hourly_summary['WinningPercentage'], palette=colors, ax=ax)
     
@@ -35,7 +37,7 @@ def generate_winning_percentage_by_hour(df):
     ax.set_xlabel('Hour of Day (CST)')
     ax.set_ylabel('Winning Percentage (%)')
     ax.grid(True)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    ax.set_xticklabels(hour_order, rotation=45)
     
     # Add color bar
     cbar = fig.colorbar(sm, ax=ax)

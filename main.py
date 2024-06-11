@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import requests
 import pandas as pd
 from utils.window_setup import create_scrollable_window
+from reports.pnl_table import create_pnl_table
 from matplotlib.figure import Figure
 
 # Import the report modules from the reports directory
@@ -74,18 +75,6 @@ def update_overview(tab, df):
     balance_graph_frame = tk.Frame(overview_frame)
     balance_graph_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
     create_balance_graph(balance_graph_frame, df)
-
-def create_pnl_table(frame, df):
-    df['CustomTradeDay'] = pd.to_datetime(df['CustomTradeDay'])
-    pnl_summary = df.groupby(df['CustomTradeDay'].dt.date).agg({
-        'NetPnL': 'sum'
-    }).reset_index()
-    
-    for index, row in pnl_summary.iterrows():
-        day_label = tk.Label(frame, text=f"{row['CustomTradeDay']}\n{row['NetPnL']:.2f}",
-                             bg="green" if row['NetPnL'] > 0 else "red",
-                             fg="white", padx=5, pady=5)
-        day_label.grid(row=index // 7, column=index % 7, padx=5, pady=5, sticky="nsew")
 
 def create_balance_graph(frame, df):
     df['CustomTradeDay'] = pd.to_datetime(df['CustomTradeDay'])
