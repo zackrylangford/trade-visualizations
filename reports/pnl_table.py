@@ -31,9 +31,15 @@ def create_pnl_table(frame, df):
     # Find the number of weeks to display
     num_weeks = (pnl_summary['CustomTradeDay'].max() - start_of_week).days // 7 + 1
 
+    # Add day labels at the top
+    days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    for col, day in enumerate(days_of_week):
+        day_label = tk.Label(frame, text=day, padx=5, pady=5, bg="lightgray", fg="black")
+        day_label.grid(row=0, column=col, padx=5, pady=5, sticky="nsew")
+
     # Iterate over the calendar days and create labels
     date = start_of_week
-    for week in range(num_weeks):
+    for week in range(1, num_weeks + 1):  # Start from row 1 to leave space for day labels
         for day in range(7):
             daily_pnl = pnl_summary[pnl_summary['CustomTradeDay'] == date]['NetPnL'].values
             pnl_value = daily_pnl[0] if daily_pnl else 0
@@ -56,7 +62,3 @@ def update_overview(tab, df):
     pnl_table_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
     create_pnl_table(pnl_table_frame, df)
 
-    # Add line graph for account balance
-    balance_graph_frame = tk.Frame(overview_frame)
-    balance_graph_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-    create_balance_graph(balance_graph_frame, df)
